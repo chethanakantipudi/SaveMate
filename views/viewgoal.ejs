@@ -1,0 +1,166 @@
+<%- include('partials/header') %>
+
+<style>
+    .goal-header {
+        position: relative;
+        height: 250px;
+        border-radius: var(--radius-lg);
+        background-size: cover;
+        background-position: center;
+        margin-bottom: -80px; /* Pull content up over the image */
+        display: flex;
+        align-items: flex-end;
+        padding: 2rem;
+    }
+    .goal-header::after {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(to top, rgba(0,0,0,0.7), rgba(0,0,0,0.1));
+        border-radius: var(--radius-lg);
+    }
+    .goal-header-content {
+        position: relative;
+        z-index: 2;
+        color: white;
+    }
+    .goal-header-content h1 {
+        font-size: 2.5rem;
+    }
+    .goal-main-grid {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 1.5rem;
+        padding-top: 100px; /* Space for the header image overlap */
+    }
+    .goal-progress-card { grid-column: 1 / -1; }
+    
+    @media (min-width: 768px) {
+        .goal-main-grid { grid-template-columns: repeat(3, 1fr); }
+        .goal-transaction-card { grid-column: span 1; }
+        .goal-history-card { grid-column: span 2; }
+    }
+    
+    .input-with-icon { position: relative; }
+    .input-with-icon .form-input { padding-left: 2.5rem; }
+    .input-with-icon i {
+        position: absolute;
+        left: 1rem;
+        top: 50%;
+        transform: translateY(-50%);
+        color: var(--text-secondary);
+    }
+    .goal-actions-container {
+        display: flex;
+        gap: 1rem;
+        margin-top: 2rem;
+        border-top: 1px solid var(--border-color);
+        padding-top: 1.5rem;
+    }
+</style>
+
+<div class="animate-fade-in">
+    <div class="goal-header" style="background-image: url('<%= goal.image_url %>');">
+        <div class="goal-header-content">
+            <h1><%= goal.goal_name %></h1>
+            <p>Target: <%= user.currency %><%= Number(goal.end_total).toLocaleString() %></p>
+        </div>
+    </div>
+
+    <div class="goal-main-grid">
+        <div class="card goal-progress-card">
+            <h3 class="card-title">Progress Overview</h3>
+            <div class="progress-meta">
+                <span>
+                    <strong><%= user.currency %><%= Number(goal.current_total).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2}) %></strong> saved
+                </span>
+                <span class="progress-percent">
+                     <%= Math.round((goal.current_total / goal.end_total) * 100) %>%
+                </span>
+            </div>
+            <div class="progress-bar">
+                <div class="progress-fill" data-progress="<%= Math.min(100, ((goal.current_total / goal.end_total) * 100)) %>"></div>
+            </div>
+            <% if (goal.achieved) { %>
+                <p style="margin-top: 1rem; color: var(--secondary-color); font-weight: 500;">
+                    <i class="fas fa-trophy"></i> Congratulations, you've achieved this goal!
+                </p>
+            <% } %>
+        </div>
+
+        <div class="card goal-transaction-card">
+            <h3 class="card-title"><i class="fas fa-exchange-alt"></i> Add Transaction</h3>
+            <form action="/goal/<%= goal.id %>/transaction" method="POST" id="transactionForm">
+                <div class="form-group">
+                    <label for="amount" class="form-label">Amount</label>
+                    <div class="input-with-icon">
+                         <i class="fas fa-coins"></i>
+                        <input type="number" id="amount" name="amount" class="form-input" required placeholder="0.00" step="0.01" min="0.01">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="type" class="form-label">Type</label>
+                    <select id="type" name="type" class="form-input" required>
+                        <option value="deposit" selected>Deposit</option>
+                        <option value="withdrawal">Withdrawal</option>
+                    </select>
+                </div>
+                <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 1rem;" <%- goal.achieved ? 'disabled' : '' %>>
+                    <i class="fas fa-plus-circle"></i> Submit Transaction
+                </button>
+                 <% if (goal.achieved) { %>
+                    <small style="display: block; text-align: center; margin-top: 0.5rem; color: var(--text-secondary);">This goal is complete.</small>
+                <% } %>
+            </form>
+        </div>
+
+        <div class="card goal-history-card">
+            <div class="card-header">
+                <h3 class="card-title"><i class="fas fa-history"></i> Recent History</h3>
+                <a href="/savingshistory" class="btn btn-secondary">View All</a>
+            </div>
+             <% if ((goal.Transactions || []).length === 0) { %>
+                <div class="empty-state">
+                    <p>No transactions recorded for this goal yet.</p>
+                </div>
+            <% } else { %>
+                <ul class="transaction-list">
+                    <% goal.Transactions.slice(0, 5).forEach(function(transaction) { %>
+                        <li class="transaction-item">
+                            <div class="transaction-meta">
+                                <div class="transaction-icon <%= transaction.type %>">
+                                   <i class="fas fa-<%= transaction.type === 'deposit' ? 'arrow-up' : 'arrow-down' %>"></i>
+                                </div>
+                                <div>
+                                    <div class="transaction-name"><%= transaction.type.charAt(0).toUpperCase() + transaction.type.slice(1) %></div>
+                                   <div class="transaction-date"><%= new Date(transaction.date).toLocaleDateString() %></div>
+                                </div>
+                            </div>
+                            <div class="transaction-amount <%= transaction.type === 'deposit' ? 'amount-positive' : 'amount-negative' %>">
+                                <%= transaction.type === 'deposit' ? '+' : '-' %><%= user.currency %><%= Number(transaction.amount).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2}) %>
+                            </div>
+                        </li>
+                   <% }); %>
+                </ul>
+            <% } %>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="goal-actions-container">
+            <a href="/goal/<%= goal.id %>/edit" class="btn btn-secondary" style="margin-right: auto;">
+                <i class="fas fa-pencil-alt"></i> Edit Goal
+            </a>
+            <button type="button" id="deleteGoalBtn" class="btn btn-danger">
+                <i class="fas fa-trash-alt"></i> Delete Goal
+            </button>
+        </div>
+    </div>
+</div>
+
+<%# IMPORTANT: This script tag is required for the JS file to work correctly %>
+<script>
+    const USER_CURRENCY = '<%= user.currency %>';
+</script>
+
+<%- include('partials/footer', { include_js: '<script src="/public/js/viewgoal.js"></script>' }) %>

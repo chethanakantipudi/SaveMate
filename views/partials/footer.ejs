@@ -1,0 +1,113 @@
+    </main>
+
+    <% if (session.user) { %>
+        <%- include('chatbot-widget', { user: session.user }) %>
+    <% } %>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="/public/js/main.js"></script>
+
+    <% if (session.user) { %>
+        <script src="/public/js/chatbot.js"></script>
+    <% } %>
+
+    <!-- page-specific include_js handled at end of document -->
+
+    <!-- Footer (fragment) -->
+    <footer class="footer" style="background-color: var(--bg-primary); padding: 2rem 0; margin-top: 4rem;">
+        <div class="container">
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 2rem;">
+                <div>
+                    <h3 class="logo" style="margin-bottom: 1rem;">
+                        <i class="fas fa-piggy-bank"></i> SaveMate
+                    </h3>
+                    <p style="color: var(--text-secondary);">
+                        Your personal savings companion helping you achieve your financial goals.
+                    </p>
+                </div>
+                <div>
+                    <h4 style="margin-bottom: 1rem;">Quick Links</h4>
+                    <ul style="list-style: none;">
+                        <li><a href="/" class="nav-link">Home</a></li>
+                        <li><a href="/dashboard" class="nav-link">Dashboard</a></li>
+                        <li><a href="/profile" class="nav-link">Profile</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 style="margin-bottom: 1rem;">Contact</h4>
+                    <ul style="list-style: none;">
+                        <li style="color: var(--text-secondary);"><i class="fas fa-envelope"></i> support@savemate.com</li>
+                        <li style="color: var(--text-secondary);"><i class="fas fa-phone"></i> +1 (555) 123-4567</li>
+                    </ul>
+                </div>
+            </div>
+            <div style="margin-top: 2rem; padding-top: 2rem; border-top: 1px solid var(--bg-accent); text-align: center; color: var(--text-secondary);">
+                &copy; <%= new Date().getFullYear() %> SaveMate. All rights reserved.
+            </div>
+        </div>
+    </footer>
+
+    <!-- Toast Notifications Container -->
+    <div id="toast-container"></div>
+
+    <!-- JavaScript -->
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
+    <script src="/public/js/script.js"></script>
+
+    <script>
+        // Toast notification function
+        function showToast(message, type = 'success') {
+            const toast = document.createElement('div');
+            toast.className = `toast toast-${type} animate-fade-in`;
+            toast.innerHTML = message;
+            document.getElementById('toast-container').appendChild(toast);
+            
+            setTimeout(() => {
+                toast.style.animation = 'slideOut 0.3s ease-out forwards';
+                setTimeout(() => toast.remove(), 300);
+            }, 3000);
+        }
+
+        // Add smooth scrolling
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                document.querySelector(this.getAttribute('href')).scrollIntoView({
+                    behavior: 'smooth'
+                });
+            });
+        });
+    </script>
+    
+    <!-- Page-specific scripts -->
+        <% if (typeof include_js !== 'undefined') { %>
+            <%- include_js %>
+        <% } %>
+    <% if (typeof script !== 'undefined') { %>
+        <%- script %>
+    <% } %>
+    <div style="background:transparent; border-top:1px solid var(--bg-accent); padding: 1rem 0; text-align:center; color:var(--muted); font-size:0.9rem;">
+        <div style="max-width:1200px; margin: 0 auto; display:flex; justify-content:space-between; align-items:center; gap:1rem; padding:0 1rem;">
+            <div>&copy; <%= new Date().getFullYear() %> SaveMate</div>
+            <div><a href="/terms" class="nav-link">Terms</a> · <a href="/privacy" class="nav-link">Privacy</a></div>
+        </div>
+    </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Apply progress widths
+            document.querySelectorAll('.progress-fill').forEach(function(el) {
+                const val = parseFloat(el.getAttribute('data-progress')) || 0;
+                el.style.width = Math.min(100, val) + '%';
+            });
+
+            // Set transaction icon colors
+            document.querySelectorAll('.transaction-icon').forEach(function(icon){
+                const t = icon.getAttribute('data-type');
+                if (t === 'deposit') icon.style.background = 'var(--secondary-color)';
+                else icon.style.background = 'var(--danger-color)';
+            });
+        });
+    </script>
+</body>
+</html>

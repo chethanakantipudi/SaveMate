@@ -1,0 +1,224 @@
+<%- include('partials/header') %>
+
+<style>
+/* Styles for the new form elements */
+.input-with-icon {
+position: relative;
+}
+.input-with-icon .form-input {
+padding-left: 2.5rem;
+}
+.input-with-icon i {
+position: absolute;
+left: 1rem;
+top: 50%;
+transform: translateY(-50%);
+color: var(--text-secondary);
+}
+.form-row {
+display: grid;
+grid-template-columns: 1fr 1fr;
+gap: 1rem;
+}
+.goal-image-selector {
+display: grid;
+grid-template-columns: repeat(auto-fill, minmax(50px, 1fr));
+gap: 0.5rem;
+margin-top: 0.5rem;
+}
+.goal-image-option {
+width: 100%;
+aspect-ratio: 1/1;
+object-fit: contain;
+padding: 0.25rem;
+border-radius: var(--radius-md);
+border: 2px solid var(--border-color);
+cursor: pointer;
+transition: all var(--transition-speed) ease;
+}
+.goal-image-option:hover {
+background-color: var(--bg-secondary);
+}
+.goal-image-option.selected {
+border-color: var(--primary-color);
+box-shadow: 0 0 0 3px hsla(var(--primary-hsl), 0.2);
+}
+.form-actions {
+display: flex;
+justify-content: flex-end;
+gap: 1rem;
+margin-top: 2rem;
+border-top: 1px solid var(--border-color);
+padding-top: 1.5rem;
+}
+.form-description {
+margin-bottom: 2rem;
+color: var(--text-secondary);
+text-align: center;
+}
+@media (max-width: 500px) {
+.form-row {
+grid-template-columns: 1fr;
+}
+}
+</style>
+
+<%
+const goalImages = [
+'/public/img/goal-icons/vacation.png',
+'/public/img/goal-icons/laptop.png',
+'/public/img/goal-icons/car.png',
+'/public/img/goal-icons/house.png',
+'/public/img/goal-icons/ring.png',
+'/public/img/goal-icons/gift.png',
+'/public/img/goal-icons/piggy-bank.png',
+'/public/img/goal-icons/default.png',
+];
+%>
+
+<div class="auth-container animate-fade-in">
+<div class="card" style="max-width: 550px;">
+<h1 class="card-title" style="text-align: center;">
+<i class="fas fa-bullseye"></i> Create a New Goal
+</h1>
+<p class="form-description">Let's set up your next savings target. What are you working towards?</p>
+<form action="/add_goal" method="POST" id="addGoalFormStatic">
+<div class="form-group">
+<label for="goal_name" class="form-label">Goal Name</label>
+<div class="input-with-icon">
+<i class="fas fa-flag-checkered"></i>
+<input type="text" id="goal_name" name="goal_name" class="form-input" required placeholder="e.g., New Laptop, Vacation">
+</div>
+</div>
+
+    <div class="form-row">
+        <div class="form-group">
+            <label for="goal_amount" class="form-label">Target Amount</label>
+            <div class="input-with-icon">
+                <i class="fas fa-coins"></i>
+                <input type="number" id="goal_amount" name="goal_amount" class="form-input" required placeholder="e.g., 1500">
+            </div>
+        </div>
+        
+        <div class="form-group">
+            <label for="goal_date" class="form-label">Target Date</label>
+            <div class="input-with-icon">
+                <i class="fas fa-calendar-alt"></i>
+                <input type="date" id="goal_date" name="goal_date" class="form-input" required>
+            </div>
+        </div>
+    </div>
+
+    <div class="form-group">
+        <label class="form-label">Choose an Icon</label>
+        <div class="goal-image-selector">
+            <% goalImages.forEach((img, index) => { %>
+                <img src="<%= img %>" alt="Goal Icon <%= index + 1 %>" class="goal-image-option <%= index === 0 ? 'selected' : '' %>" data-url="<%= img %>">
+            <% }); %>
+        </div>
+        <input type="hidden" id="image_url" name="image_url" value="<%= goalImages[0] %>">
+    </div>
+
+    <div class="form-actions">
+        <a href="/dashboard" class="btn btn-secondary">Cancel</a>
+        <button type="submit" class="btn btn-primary">
+            <i class="fas fa-plus-circle"></i> Create Goal
+        </button>
+    </div>
+</form>
+
+</div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const imageOptions = document.querySelectorAll('.goal-image-option');
+    const imageUrlInput = document.getElementById('image_url');
+    if (imageOptions.length > 0 && imageUrlInput) {
+        imageOptions.forEach(option => {
+            option.addEventListener('click', () => {
+                imageOptions.forEach(opt => opt.classList.remove('selected'));
+                option.classList.add('selected');
+                imageUrlInput.value = option.dataset.url;
+            });
+        });
+    }
+
+    const dateInput = document.getElementById('goal_date');
+    if (dateInput) {
+        dateInput.min = new Date().toISOString().split('T')[0];
+    }
+
+    // Handle form submission with fetch for a smoother experience
+    const form = document.getElementById('addGoalFormStatic');
+    if (form) {
+        form.addEventListener('submit', async function (e) {
+            e.preventDefault();
+
+            // Safe submit button access
+            let submitBtn = form.querySelector('button[type="submit"]');
+            if (!submitBtn) submitBtn = form.querySelector('.btn-primary') || document.querySelector('button[type="submit"]');
+            const originalBtnText = submitBtn ? submitBtn.innerHTML : null;
+            if (submitBtn) {
+                submitBtn.disabled = true;
+                submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Creating...';
+            }
+
+            try {
+                const payload = {
+                    goal_name: form.goal_name.value.trim(),
+                    goal_amount: parseFloat(form.goal_amount.value),
+                    goal_date: form.goal_date.value,
+                    image_url: form.image_url.value
+                };
+
+                const response = await fetch('/add_goal', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                const contentType = (response.headers.get('content-type') || '').toLowerCase();
+                let result = null;
+                if (contentType.includes('application/json')) {
+                    // only attempt to parse JSON when content-type is JSON
+                    result = await response.json();
+                }
+
+                if (response.ok) {
+                    // Prefer explicit redirect from JSON
+                    if (result && result.redirectUrl) {
+                        window.location.href = result.redirectUrl;
+                        return;
+                    }
+                    // If server followed a redirect and fetch ended up on the dashboard, follow it
+                    if (response.redirected && response.url) {
+                        window.location.href = response.url;
+                        return;
+                    }
+                    // Fallback to dashboard when request succeeded but no redirect provided
+                    window.location.href = '/dashboard';
+                    return;
+                }
+
+                // Non-OK responses
+                const msg = (result && result.message) || 'Failed to create goal.';
+                alert(msg);
+                if (submitBtn) {
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = originalBtnText;
+                }
+            } catch (error) {
+                console.error('Error creating goal:', error);
+                alert('A network error occurred. Please try again.');
+                if (submitBtn) {
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = originalBtnText;
+                }
+            }
+        });
+    }
+});
+</script>
+
+<%- include('partials/footer') %>

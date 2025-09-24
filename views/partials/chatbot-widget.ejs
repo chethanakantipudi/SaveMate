@@ -1,0 +1,23 @@
+<div class="chatbot-fab" id="chatbot-fab" title="Ask Savvy">
+    <i class="fas fa-comment-dots"></i>
+</div>
+
+<div class="chatbot-widget" id="chatbot-widget">
+    <div class="chatbot-header">
+        <h4>Ask Savvy</h4>
+        <button class="chatbot-close-btn" id="chatbot-close-btn" title="Close Chat">&times;</button>
+    </div>
+    <div class="chatbot-messages" id="chatbot-messages">
+        <div class="chatbot-message bot">
+            <div class="chatbot-message-content">
+                Hi <%= user.fname %>! How can I help you with your savings goals today?
+            </div>
+        </div>
+    </div>
+    <form class="chatbot-input-form" id="chatbot-form">
+        <input type="text" id="chatbot-input" placeholder="Ask a question..." autocomplete="off" required>
+        <button type="submit" class="btn btn-primary" id="chatbot-send-btn">
+            <i class="fas fa-paper-plane"></i>
+        </button>
+    </form>
+</div>

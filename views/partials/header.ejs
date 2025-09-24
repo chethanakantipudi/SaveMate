@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title><%= typeof pageTitle !== 'undefined' ?
+pageTitle : 'SaveMate' %></title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/public/css/modern.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="/public/css/modern.css">
+    <link rel="stylesheet" href="/public/css/chatbot.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+
+<header class="navbar">
+    <div class="container navbar-content">
+        <a href="/" class="logo">
+            <i class="fas fa-piggy-bank"></i>
+            <span>SaveMate</span>
+        </a>
+        <nav class="nav-links">
+       <% if (session && session.user) { %>
+                <a href="/dashboard" class="nav-link">Dashboard</a>
+                <a href="/profile" class="nav-link">Profile</a>
+                <a href="/savingshistory" class="nav-link">History</a>
+<a href="/logout" class="btn btn-secondary">Logout</a>
+            <% } else { %>
+                <a href="/login" class="nav-link">Login</a>
+               <a href="/signup" class="btn btn-primary">Sign Up</a>
+            <% } %>
+        </nav>
+    </div>
+</header>
+
+<main>
+    <div class="container" style="padding-top: 2rem; padding-bottom: 2rem;">
+        <% if (typeof flashes !== 'undefined' && flashes && flashes.length) { %>
+            <div class="flash-messages">
+                <% flashes.forEach(function(flash) { %>
+                    <div class="flash flash-<%= flash.type %>">
+        <%= flash.msg %>
+                    </div>
+                <% }); %>
+            </div>
+        <% } %>

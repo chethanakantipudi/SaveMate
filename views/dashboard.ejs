@@ -1,0 +1,266 @@
+<%- include('partials/header') %>
+
+<style>
+/* FIX: Prevents the plus icon from animating on hover */
+.dashboard-header .btn:hover .fa-plus,
+.goals-container .card-header .btn:hover .fa-plus {
+    animation: none;
+    transform: none;
+}
+
+/* Styles for the redesigned goal card */
+.goal-card {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: 1.25rem;
+}
+.goal-card-header {
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+.goal-card-icon-wrap {
+    flex-shrink: 0;
+    width: 50px;
+    height: 50px;
+    border-radius: var(--radius-md);
+    background-color: var(--bg-secondary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.5rem;
+}
+.goal-card-icon {
+    max-width: 100%;
+    max-height: 100%;
+}
+.goal-card-title-group {
+    flex-grow: 1;
+}
+.goal-card .goal-title {
+    margin-bottom: 0.25rem;
+    font-size: 1.1rem;
+    line-height: 1.3;
+}
+.goal-card .goal-target {
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+}
+.goal-card .badge-achieved {
+    font-size: 1.5rem;
+    color: var(--accent-color);
+}
+
+/* Anchor achieved badge to avoid bouncing when parent transforms */
+.goal-card {
+    position: relative; /* ensure absolute children are positioned relative to the card */
+}
+.goal-card .badge-achieved {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    transform: none !important;
+    transition: none !important;
+    will-change: auto;
+    pointer-events: none;
+}
+.goal-card .progress-meta {
+    margin-bottom: 0.5rem;
+}
+.goal-card .progress-saved {
+    font-weight: 600;
+    color: var(--text-primary);
+}
+.goal-meta-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 1.25rem;
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+}
+.goal-days-left {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+.goal-days-left.overdue { color: var(--danger-color); }
+.goal-days-left.achieved { color: var(--secondary-color); }
+.goal-actions {
+    display: flex;
+    gap: 0.5rem;
+}
+</style>
+
+<div class="dashboard-container animate-fade-in">
+
+<div class="dashboard-header">
+<h1>Welcome back, <%= user.fname %>!</h1>
+<div class="actions">
+<a href="/add_goal" class="btn btn-primary">
+ New Goal
+</a>
+</div>
+</div>
+
+<div class="stats-grid">
+<div class="stat-card card">
+<div class="stat-icon"><i class="fas fa-piggy-bank"></i></div>
+<div class="stat-value"><%= user.currency %><%= Number(user.total_currently_saved).toLocaleString() %></div>
+<div class="stat-label">Total Savings</div>
+</div>
+<div class="stat-card card">
+<div class="stat-icon" style="color: var(--secondary-color);"><i class="fas fa-bullseye"></i></div>
+<div class="stat-value"><%= (goals || []).length %></div>
+<div class="stat-label">Active Goals</div>
+</div>
+<div class="stat-card card">
+<div class="stat-icon" style="color: var(--accent-color);"><i class="fas fa-trophy"></i></div>
+<div class="stat-value"><%= (user.goals_achieved || 0) %></div>
+<div class="stat-label">Goals Achieved</div>
+</div>
+</div>
+
+<div class="dashboard-grid">
+<div class="card goals-container">
+<div class="card-header">
+<h3 class="card-title"><i class="fas fa-bullseye"></i> Your Goals</h3>
+<a href="/add_goal" class="btn btn-secondary">
+<i class="fas fa-plus"></i>
+</a>
+</div>
+
+   <% if ((goals || []).length === 0) { %>
+        <div class="empty-state">
+            <img src="/public/img/track-tab-logo.png" alt="No goals yet">
+            <h4>No Active Goals</h4>
+            <p>Click the button below to start your first savings goal.</p>
+            <a href="/add_goal" class="btn btn-primary">
+                <i class="fas fa-plus-circle"></i> Create First Goal
+            </a>
+        </div>
+    <% } else { %>
+       <div class="goals-grid">
+            <% goals.forEach(function(goal) { %>
+                <% 
+                // FIXED: Proper date calculation to prevent NaN
+                let daysLeft = 0;
+                try {
+                    if (goal.end_date) {
+                        const endDate = new Date(goal.end_date);
+                        const currentDate = new Date();
+                        
+                        // Ensure we have valid dates
+                        if (!isNaN(endDate.getTime()) && !isNaN(currentDate.getTime())) {
+                            daysLeft = Math.ceil((endDate - currentDate) / (1000 * 60 * 60 * 24));
+                        } else {
+                            daysLeft = null; // Invalid date
+                        }
+                    } else {
+                        daysLeft = null; // No end date
+                    }
+                } catch (error) {
+                    daysLeft = null; // Error in calculation
+                }
+                
+                const progress = Math.min(100, ((goal.current_total / goal.end_total) * 100) || 0);
+                %>
+                <div class="goal-card card">
+                    <div class="goal-card-header">
+                        <div class="goal-card-icon-wrap">
+                            <img src="<%= goal.image_url %>" alt="<%= goal.goal_name %>" class="goal-card-icon">
+                        </div>
+                        <div class="goal-card-title-group">
+                            <h3 class="goal-title"><%= goal.goal_name %></h3>
+                            <div class="goal-target">
+                                <span>Target: <%= user.currency %><%= Number(goal.end_total).toLocaleString() %></span>
+                            </div>
+                        </div>
+                        <% if (goal.achieved) { %>
+                            <div class="badge-achieved" title="Achieved!"><i class="fas fa-trophy"></i></div>
+                        <% } %>
+                    </div>
+                
+                    <div class="goal-progress">
+                        <div class="progress-meta">
+                            <span class="progress-saved"><%= user.currency %><%= Number(goal.current_total).toLocaleString() %></span>
+                            <span class="progress-percent"><%= Math.round(progress) %>%</span>
+                        </div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" data-progress="<%= progress %>"></div>
+                        </div>
+                    </div>
+              
+                    <div class="goal-meta-footer">
+                        <% if (goal.achieved) { %>
+                             <div class="goal-days-left achieved">
+                                <i class="fas fa-check-circle"></i> Completed!
+                            </div>
+                        <% } else if (daysLeft === null) { %>
+                             <div class="goal-days-left">
+                                <i class="fas fa-calendar-times"></i> No target date
+                            </div>
+                        <% } else if (daysLeft < 0) { %>
+                             <div class="goal-days-left overdue">
+                                <i class="fas fa-exclamation-circle"></i> Overdue
+                            </div>
+                        <% } else { %>
+                            <div class="goal-days-left">
+                                <i class="fas fa-hourglass-half"></i> <%= daysLeft %> days left
+                            </div>
+                        <% } %>
+
+                        <div class="goal-actions">
+                            <a href="/goal/<%= goal.id %>" class="btn btn-primary btn-sm">
+                                <i class="fas fa-eye"></i> View & Manage
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            <% }); %>
+       </div>
+    <% } %>
+</div>
+
+<div class="card activity-container">
+    <div class="card-header">
+          <h3 class="card-title"><i class="fas fa-history"></i> Recent Activity</h3>
+        <a href="/savingshistory" class="btn btn-secondary">View All</a>
+    </div>
+
+   <% if ((user_savings_history || []).length === 0) { %>
+        <div class="empty-state">
+            <p>No transactions yet. Add to a goal to get started!</p>
+        </div>
+    <% } else { %>
+        <ul class="transaction-list">
+            <% user_savings_history.forEach(function(transaction) { %>
+                <li class="transaction-item">
+                    <div class="transaction-meta">
+                        <div class="transaction-icon <%= transaction.type %>">
+                           <i class="fas fa-<%= transaction.type === 'deposit' ? 'arrow-up' : 'arrow-down' %>"></i>
+                        </div>
+                        <div>
+                            <!-- FIXED: Safe access to Goal with null check to prevent the error -->
+                            <div class="transaction-name">
+                                <%= transaction.Goal && transaction.Goal.goal_name ? transaction.Goal.goal_name : 'Unknown Goal' %>
+                            </div>
+                           <div class="transaction-date"><%= new Date(transaction.date).toLocaleDateString() %></div>
+                        </div>
+                    </div>
+                    <div class="transaction-amount <%= transaction.type === 'deposit' ? 'amount-positive' : 'amount-negative' %>">
+                        <%= transaction.type === 'deposit' ? '+' : '-' %><%= user.currency %><%= Number(transaction.amount).toLocaleString() %>
+                    </div>
+                </li>
+           <% }); %>
+        </ul>
+    <% } %>
+</div>
+
+</div>
+
+</div>
+
+<%- include('partials/footer', { include_js: '<script src="/public/js/dashboard.js"></script>' }) %>

@@ -1,0 +1,21 @@
+<script>
+$(document).ready(function(){
+    if (typeof add_goal !== 'undefined' && add_goal) {
+        showCreateGoal();
+    };
+    $("#add_goal_fab_card, #add-goal-btn").click(function(){
+        showCreateGoal();
+    });
+    $("#create-goal-cancel").click(function(){
+        hideCreateGoal();
+    });
+});
+function showCreateGoal(){
+    $("#create-goal-card").removeClass("display-none");
+    $(".card:not('#create-goal-card')").addClass("display-none");
+}
+function hideCreateGoal(){
+    $("#create-goal-card").addClass("display-none");
+    $(".card:not('#create-goal-card')").removeClass("display-none");
+}
+</script>

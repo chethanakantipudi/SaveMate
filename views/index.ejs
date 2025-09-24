@@ -1,0 +1,133 @@
+<%- include('partials/header') %>
+
+<style>
+    /* Page-specific styles for the landing page hero */
+    .hero-section {
+        text-align: center;
+        padding: 6rem 1rem;
+        background-color: var(--primary-light);
+        border-radius: var(--radius-lg);
+        margin-bottom: 3rem;
+    }
+    .hero-section h1 {
+        font-size: 3rem;
+        font-weight: 700;
+        line-height: 1.2;
+        color: var(--text-primary);
+        max-width: 800px;
+        margin: 0 auto 1rem;
+    }
+    .hero-section p {
+        font-size: 1.15rem;
+        color: var(--text-secondary);
+        max-width: 650px;
+        margin: 0 auto 2rem;
+    }
+    .features-section h2, .stats-section h2 {
+        text-align: center;
+        font-size: 2rem;
+        margin-bottom: 1rem;
+        font-weight: 600;
+    }
+    .features-section .subtitle, .stats-section .subtitle {
+        text-align: center;
+        color: var(--text-secondary);
+        max-width: 600px;
+        margin: 0 auto 3rem;
+    }
+    .feature-card-icon {
+        font-size: 2rem;
+        margin-bottom: 1rem;
+        color: var(--primary-color);
+        width: 60px;
+        height: 60px;
+        background-color: var(--primary-light);
+        border-radius: var(--radius-md);
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+    }
+</style>
+
+<div class="animate-fade-in">
+    <div class="hero-section">
+        <h1>Achieve Your Financial Goals, One Step at a Time.</h1>
+        <p>SaveMate is your personal savings companion, helping you track your progress and celebrate your achievements effortlessly.</p>
+        <% if (user) { %>
+            <a href="/dashboard" class="btn btn-primary">Go to Your Dashboard</a>
+        <% } else { %>
+            <a href="/signup" class="btn btn-primary">Get Started for Free</a>
+        <% } %>
+    </div>
+
+    <div class="stats-section">
+        <h2>Join a Thriving Community</h2>
+        <p class="subtitle">See the collective success of savers just like you.</p>
+        <div class="stats-grid">
+            <div class="card stat-card">
+                <div class="stat-icon"><i class="fas fa-users"></i></div>
+                <div class="stat-value"><%= app_stats.users_total.toLocaleString() %>+</div>
+                <div class="stat-label">Happy Savers</div>
+            </div>
+            <div class="card stat-card">
+                <div class="stat-icon"><i class="fas fa-sack-dollar"></i></div>
+                <div class="stat-value"><%= user ? user.currency : '£' %><%= Number(app_stats.saved_total).toLocaleString() %></div>
+                <div class="stat-label">Saved Collectively</div>
+            </div>
+            <div class="card stat-card">
+                <div class="stat-icon"><i class="fas fa-trophy"></i></div>
+                <div class="stat-value"><%= app_stats.achieved_goals.toLocaleString() %></div>
+                <div class="stat-label">Goals Achieved</div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="features-section" style="margin-top: 4rem;">
+        <% if (!user) { %>
+            <h2>How It Works</h2>
+            <p class="subtitle">Start your savings journey in three simple steps.</p>
+            <div class="grid" style="grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));">
+                <div class="card">
+                    <div class="feature-card-icon">1</div>
+                    <h3 class="card-title">Sign Up in Seconds</h3>
+                    <p>Create your free account with a simple form and you're ready to start saving towards your dreams[cite: 133, 134].</p>
+                </div>
+                <div class="card">
+                    <div class="feature-card-icon">2</div>
+                    <h3 class="card-title">Track Your Savings</h3>
+                    <p>Easily create new goals, log your deposits, and watch your progress grow with intuitive charts and visuals[cite: 136, 137].</p>
+                </div>
+                <div class="card">
+                    <div class="feature-card-icon">3</div>
+                    <h3 class="card-title">Achieve Your Goals</h3>
+                    <p>Stay motivated, hit your targets, and look back on your savings history to see how far you've come[cite: 139, 140].</p>
+                </div>
+            </div>
+        <% } else { %>
+            <h2>Quick Access</h2>
+            <p class="subtitle">Jump right back into managing your savings.</p>
+            <div class="grid" style="grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));">
+                <div class="card">
+                    <div class="feature-card-icon"><i class="fas fa-chart-pie"></i></div>
+                    <h3 class="card-title">Dashboard</h3>
+                    <p>Get a complete overview of your total savings, active goals, and recent transaction history at a glance[cite: 141].</p>
+                    <a href="/dashboard" class="btn btn-secondary" style="margin-top: 1rem;">View Dashboard</a>
+                </div>
+                <div class="card">
+                    <div class="feature-card-icon"><i class="fas fa-user-cog"></i></div>
+                    <h3 class="card-title">Profile</h3>
+                    <p>Keep your personal details and password up-to-date to ensure your account is always secure[cite: 143].</p>
+                    <a href="/profile" class="btn btn-secondary" style="margin-top: 1rem;">Manage Profile</a>
+                </div>
+                <div class="card">
+                    <div class="feature-card-icon"><i class="fas fa-history"></i></div>
+                    <h3 class="card-title">Savings History</h3>
+                    <p>Review a detailed log of all your deposits and withdrawals for every goal you've created[cite: 144, 145].</p>
+                    <a href="/savingshistory" class="btn btn-secondary" style="margin-top: 1rem;">View History</a>
+                </div>
+            </div>
+        <% } %>
+    </div>
+</div>
+
+<%- include('partials/footer') %>

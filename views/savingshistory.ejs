@@ -1,0 +1,87 @@
+<%- include('partials/header') %>
+
+<style>
+    .table-container {
+        width: 100%;
+        overflow-x: auto; /* For responsiveness on small screens */
+    }
+    .styled-table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+    .styled-table th, .styled-table td {
+        padding: 1rem;
+        text-align: left;
+        border-bottom: 1px solid var(--border-color);
+    }
+    .styled-table thead th {
+        background-color: var(--bg-secondary);
+        font-weight: 600;
+        color: var(--text-secondary);
+    }
+    .styled-table tbody tr:hover {
+        background-color: var(--primary-light);
+    }
+    .text-right { text-align: right !important; }
+</style>
+
+<div class="animate-fade-in">
+    <div class="card">
+        <div class="card-header">
+            <div>
+                <h2 class="card-title">Savings History</h2>
+                <% if (historytype == 'goal' && goal) { %>
+                    <p style="color: var(--text-secondary);">Showing history for: <strong><%= goal.goal_name %></strong></p>
+                <% } else { %>
+                    <p style="color: var(--text-secondary);">Showing all transactions</p>
+                <% } %>
+            </div>
+            <a href="/dashboard" class="btn btn-secondary"><i class="fas fa-arrow-left"></i> Back to Dashboard</a>
+        </div>
+
+        <% if ((user_savings_history || (goal && goal.savings_history) || []).length === 0) { %>
+            <div class="empty-state">
+                <h4>No History Yet</h4>
+                <p>Once you make a deposit or withdrawal, it will show up here.</p>
+            </div>
+        <% } else { %>
+            <div class="table-container">
+                <table class="styled-table">
+                    <thead>
+                        <tr>
+                            <th>Amount</th>
+                            <% if (historytype == 'user') { %>
+                                <th>Goal</th>
+                            <% } %>
+                            <th class="text-right">Date</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <% if (historytype == 'goal' && goal) { %>
+                            <% (goal.savings_history || []).slice().reverse().forEach(function(item) { %>
+                                <tr>
+                                    <td class="<%= Number(item[1]) > 0 ? 'amount-positive' : 'amount-negative' %>">
+                                        <strong><%= Number(item[1]) > 0 ? '+' : '-' %><%= user.currency %><%= Math.abs(Number(item[1])).toLocaleString(undefined, {minimumFractionDigits:2, maximumFractionDigits:2}) %></strong>
+                                    </td>
+                                    <td class="text-right"><%= new Date(item[0]).toLocaleDateString() %></td>
+                                </tr>
+                            <% }); %>
+                        <% } else if (historytype == 'user') { %>
+                            <% (user_savings_history || []).forEach(function(item) { %>
+                                <tr>
+                                    <td class="<%= Number(item.amount) > 0 ? 'amount-positive' : 'amount-negative' %>">
+                                        <strong><%= Number(item.amount) > 0 ? '+' : '-' %><%= user.currency %><%= Math.abs(Number(item.amount)).toLocaleString(undefined, {minimumFractionDigits:2, maximumFractionDigits:2}) %></strong>
+                                    </td>
+                                    <td><%= item.Goal.goal_name %></td>
+                                    <td class="text-right"><%= new Date(item.date).toLocaleDateString() %></td>
+                                </tr>
+                            <% }); %>
+                        <% } %>
+                    </tbody>
+                </table>
+            </div>
+        <% } %>
+    </div>
+</div>
+
+<%- include('partials/footer') %>
