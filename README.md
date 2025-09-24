@@ -71,9 +71,3 @@ Here is a professional, ready-to-use **README.md** for your SaveMate project. Co
 - Fork the repo and submit Pull Requests with clear descriptions
 - Run linting/tests before requesting merges
 
-***
-
-## License[MIT License](LICENSE) 
-
-***
-
